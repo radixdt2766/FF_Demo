@@ -1,0 +1,11 @@
+globalSetup/GetProperties.class
+globalSetup/DriverUtil.class
+globalSetup/GlobalUtils.class
+globalSetup/ExcelUtility.class
+locators/UITestLocators.class
+globalSetup/CommonElements.class
+globalSetup/ExcelUtility$2.class
+globalSetup/Base.class
+locators/RegressionTestLocators.class
+globalSetup/ExcelUtility$1.class
+locators/FunctionalTestLocators.class
