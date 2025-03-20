@@ -113,7 +113,3 @@ The tests use the following tags for organization:
 2. Make your changes
 3. Run the tests
 4. Submit a pull request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details. 
