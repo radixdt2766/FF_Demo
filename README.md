@@ -64,7 +64,7 @@ mvn test -Dcucumber.features="src/test/resources/AppFeatures/TaskManagementTest.
 
 The tests are organized into the following categories:
 
-1. Task Management Tests
+1. Order Main Hub Tests
    - CRUD operations
    - Search functionality
    - Filtering
@@ -73,7 +73,6 @@ The tests are organized into the following categories:
    - Dependencies
    - Bulk operations
    - Sorting
-   - Notifications
 
 2. Date Picker Tests
    - UI elements
@@ -82,14 +81,12 @@ The tests are organized into the following categories:
    - Custom input
    - Validation
    - Accessibility
-   - Responsive design
 
 ## Tags
 
 The tests use the following tags for organization:
 
 - @component - Component-specific tests
-- @task-management - Task management functionality
 - @datepicker - Date picker functionality
 - @functional - Functional tests
 - @ui - UI tests
@@ -103,9 +100,6 @@ The tests use the following tags for organization:
 - @validation - Input validation
 - @bulk - Bulk operations
 - @sort - Sorting functionality
-- @notification - Notification system
-- @accessibility - Accessibility tests
-- @responsive - Responsive design tests
 
 ## Contributing
 
