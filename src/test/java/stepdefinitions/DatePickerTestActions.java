@@ -1,5 +1,10 @@
 package stepdefinitions;
 
+import java.io.IOException;
+
+import org.openqa.selenium.Keys;
+import org.openqa.selenium.TimeoutException;
+
 import globalSetup.Base;
 import globalSetup.CommonElements;
 import globalSetup.DriverUtil;
@@ -8,342 +13,98 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 
 public class DatePickerTestActions implements Base {
-    CommonElements com = new CommonElements(DriverUtil.getDriver());
+	CommonElements com = new CommonElements(DriverUtil.getDriver());
 
-    // Background Steps
-    @Given("user is on the application page")
-    public void userIsOnTheApplicationPage() {
-    	System.out.println("User is on the application page");
-    }
-    
-    @Given("the date picker component is loaded")
-    public void the_date_picker_component_is_loaded() {
-    	System.out.println("User is on the application page");
-    }
+	@Given("user is on the application page")
+	public void user_is_on_the_application_page() throws IOException {
+		String url = prop.getProp("url");
+		com.navigateTo(url);
 
-    @Then("user should see the relative mode button")
-    public void user_should_see_the_relative_mode_button() {
-    	System.out.println("User is on the application page");
-    }
+		try {
+			com.waitForElementToDisplay(dp.pageTitle, 10);
+		} catch (TimeoutException e) {
+			com.reloadPage();
+			try {
+				com.waitForElementToDisplay(dp.pageTitle, 10);
+			} catch (TimeoutException e1) {
+				throw new TimeoutException("The page did not load successfully");
+			}
+		}
+	}
 
-    @Then("user should see the absolute mode button")
-    public void user_should_see_the_absolute_mode_button() {
-    	System.out.println("User is on the application page");
-    }
+	@Given("I navigate to the date picker")
+	public void i_navigate_to_the_date_picker() throws Exception {
+	    if(!com.isElementDisplayed("xpath",dp.filterTimeRangeBtn)){
+	    	throw new Exception("The date picker button is not displayed");
+	    }else {
+	    	com.click(dp.filterTimeRangeBtn);
+	    }
+	}
 
-    @Then("user should see the calendar component")
-    public void user_should_see_the_calendar_component() {
-    	System.out.println("User is on the application page");
-    }
+	@Then("I should see all elements including relative mode, absolute mode button, and input field")
+	public void i_should_see_all_elements_including_relative_mode_absolute_mode_button_calendar_and_input_field() throws Exception {
+		com.checkElementPresence("xpath", dp.filterTimeRangePopup, true, "Date Picker Popup");
+		com.checkElementPresence("xpath", dp.inputField, true, "Relative Range input field");
+		com.checkElementPresence("xpath", dp.absoluteDateBtn, true, "Absolute Date button");
+	}
 
-    @Then("user should see the input field")
-    public void user_should_see_the_input_field() {
-    	System.out.println("User is on the application page");
-    }
+	@Given("I open the date picker")
+	public void i_open_the_date_picker() throws Exception {
+		i_navigate_to_the_date_picker();
+	}
 
-    @Then("all elements should match the Figma design specifications")
-    public void all_elements_should_match_the_figma_design_specifications() {
-    	System.out.println("User is on the application page");
-    }
+	@Then("I should see predefined options like {string}, {string} etc")
+	public void i_should_see_predefined_options_like(String string, String string2) throws Exception {
+		com.checkElementPresence("xpath", dp.relative24HourBtn, true, "Last 24 hour pre defined option");
+		com.checkElementPresence("xpath", dp.relative7DaysBtn, true, "Last 7 days pre defined option");
+	}
 
-    @When("user clicks on the date picker")
-    public void user_clicks_on_the_date_picker() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-    
-    @Then("user should see the following predefined {string}:")
-    public void user_should_see_the_following_predefined() {
-        throw new io.cucumber.java.PendingException();
-    }
+	@When("I enter range {string}, {string}, {string} and check input is parsed correctly and applied")
+	public void i_enter_range(String string, String string2, String string3) throws Exception {
+		String[] inputValues = {string, string2, string3};
+		String[] searchedRange = {"2h", "10d", "4w"};
+		
+		for(int i=0; i <inputValues.length; i++) {
+			com.clearText("xpath",dp.inputField);
+			com.type(dp.inputField,inputValues[i]);
+			com.action(Keys.ENTER);
+			
+			Thread.sleep(1000);
+			String parsedRange = "//h1[text()='Orders']//following-sibling::div//button//span[contains(text(),'"+searchedRange[i]+"')]";
+			
+			try {
+				com.waitForElementToDisplay(parsedRange,5);
+			}catch(TimeoutException e) {
+				throw new TimeoutException("Input "+inputValues[i]+" was not parsed correctly to "+searchedRange[i]);
+			}
+			
+			i_navigate_to_the_date_picker();
+		}
+	}
 
-    @When("user enters {string} in the relative mode input field")
-    public void user_enters_in_the_relative_mode_input_field(String string) {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
+	@When("I click on Absolute Date button")
+	public void i_click_on_absolute_date() {
+		com.waitForElementToDisplay(dp.absoluteDateBtn, 5);
+		com.click(dp.absoluteDateBtn);
+	}
 
-    @Then("the input should be parsed correctly")
-    public void the_input_should_be_parsed_correctly() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
+	@Then("the calendar view should open")
+	public void the_calendar_view_should_open() {
+		try {
+			com.waitForElementToDisplay(dp.absoluteDateCalendar, 5);
+		} catch (TimeoutException e) {
+			throw new TimeoutException("The calendar view did not open");
+		}
+	}
 
-    @Then("the date range should be applied successfully")
-    public void the_date_range_should_be_applied_successfully() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
+	@Then("click on back button and verify relative date picker is displayed")
+	public void the_date_picker_should_either_close_or_show_a_validation_message() {
+		com.click(dp.backBtn);
+		
+		try {
+			com.waitForElementToDisplay(dp.inputField, 5);
+		} catch (TimeoutException e) {
+			throw new TimeoutException("The Absolute date picker did not navigate back to relative date picker");
+		}
     }
-
-    @Then("the system should reject the input")
-    public void the_system_should_reject_the_input() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @Then("an appropriate error message should be displayed")
-    public void an_appropriate_error_message_should_be_displayed() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @When("user clicks on {string} button")
-    public void user_clicks_on_button(String string) {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @Then("the calendar view should open")
-    public void the_calendar_view_should_open() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @Then("the view should return to relative mode")
-    public void the_view_should_return_to_relative_mode() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @When("user selects a start date from the calendar")
-    public void user_selects_a_start_date_from_the_calendar() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @When("user selects an end date from the calendar")
-    public void user_selects_an_end_date_from_the_calendar() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @Then("the selected dates should be displayed in the input field")
-    public void the_selected_dates_should_be_displayed_in_the_input_field() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @Then("the date range should be applied correctly")
-    public void the_date_range_should_be_applied_correctly() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @When("user selects a date range")
-    public void user_selects_a_date_range() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @Then("the selection should be confirmed")
-    public void the_selection_should_be_confirmed() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @Then("the date picker should close")
-    public void the_date_picker_should_close() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @Then("the selected range should be displayed in the main view")
-    public void the_selected_range_should_be_displayed_in_the_main_view() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @When("user navigates to the date picker using Tab key")
-    public void user_navigates_to_the_date_picker_using_tab_key() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @Then("the date picker should receive focus")
-    public void the_date_picker_should_receive_focus() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @When("user presses Enter key")
-    public void user_presses_enter_key() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @Then("the date picker should open")
-    public void the_date_picker_should_open() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @When("user uses arrow keys to navigate dates")
-    public void user_uses_arrow_keys_to_navigate_dates() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @Then("the focus should move accordingly")
-    public void the_focus_should_move_accordingly() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @When("user presses Escape key")
-    public void user_presses_escape_key() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @When("user views the application on desktop resolution")
-    public void user_views_the_application_on_desktop_resolution() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @Then("the date picker should display properly")
-    public void the_date_picker_should_display_properly() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @When("user views the application on tablet resolution")
-    public void user_views_the_application_on_tablet_resolution() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @Then("the date picker should adjust to screen size")
-    public void the_date_picker_should_adjust_to_screen_size() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @When("user views the application on mobile resolution")
-    public void user_views_the_application_on_mobile_resolution() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @Then("the date picker should be fully functional")
-    public void the_date_picker_should_be_fully_functional() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @When("the date picker is first opened")
-    public void the_date_picker_is_first_opened() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @Then("it should show default values or placeholders")
-    public void it_should_show_default_values_or_placeholders() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @Then("no date range should be pre-selected")
-    public void no_date_range_should_be_pre_selected() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @When("user opens the date picker")
-    public void user_opens_the_date_picker() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @When("user clicks outside the popover")
-    public void user_clicks_outside_the_popover() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @Then("the date picker should close automatically")
-    public void the_date_picker_should_close_automatically() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @When("user clicks on {string} button without selecting dates")
-    public void user_clicks_on_button_without_selecting_dates(String string) {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @Then("the date picker should either throw error or not apply any changes")
-    public void the_date_picker_should_either_throw_error_or_not_apply_any_changes() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @When("user opens the date picker in absolute mode")
-    public void user_opens_the_date_picker_in_absolute_mode() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @When("user attempts to select dates outside allowed limits")
-    public void user_attempts_to_select_dates_outside_allowed_limits() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @Then("the system should prevent selection")
-    public void the_system_should_prevent_selection() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @Then("appropriate validation message should be shown")
-    public void appropriate_validation_message_should_be_shown() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @When("user changes date values multiple times in quick succession")
-    public void user_changes_date_values_multiple_times_in_quick_succession() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @Then("the component should update smoothly")
-    public void the_component_should_update_smoothly() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @Then("no lag or performance issues should occur")
-    public void no_lag_or_performance_issues_should_occur() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @When("user navigates to the Order Main Hub page")
-    public void user_navigates_to_the_order_main_hub_page() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @Then("the date picker should be visible")
-    public void the_date_picker_should_be_visible() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @Then("the order table should update accordingly")
-    public void the_order_table_should_update_accordingly() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @Then("the filter functionality should work correctly")
-    public void the_filter_functionality_should_work_correctly() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-   
-} 
+}
